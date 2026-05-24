@@ -1,9 +1,8 @@
 from sqlalchemy import inspect
 from datetime import datetime
-from flask_validator import ValidateString, ValidateNumber, ValidateURL
 from sqlalchemy.orm import validates
 
-from .. import db  # from __init__.py
+from __init__ import db  # from __init__.py
 
 # ----------------------------------------------- #
 
@@ -25,12 +24,12 @@ class Item(db.Model):
     account_id = db.Column(db.String(100), db.ForeignKey("account.id"))
 
 
-# Validations => https://flask-validator.readthedocs.io/en/latest/index.html
-    @classmethod
-    def __declare_last__(cls):
-        ValidateString(Item.name, False, True, "The name type must be string")
-        ValidateNumber(Item.price, True, "The price type must be number")
-        ValidateURL(Item.image_link, True, True, "The image link is not valid")
+# # Validations => https://flask-validator.readthedocs.io/en/latest/index.html
+#     @classmethod
+#     def __declare_last__(cls):
+#         ValidateString(Item.name, False, True, "The name type must be string")
+#         ValidateNumber(Item.price, True, "The price type must be number")
+#         ValidateURL(Item.image_link, True, True, "The image link is not valid")
 
 # Set an empty string to null for name field => https://stackoverflow.com/a/57294872
     @validates('name')

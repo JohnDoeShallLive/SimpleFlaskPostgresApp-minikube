@@ -1,8 +1,8 @@
 from flask import request, jsonify
 import uuid
 
-from .. import db
-from .models import Item
+from __init__ import db
+from items.models import Item
 
 # ----------------------------------------------- #
 
