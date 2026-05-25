@@ -1,5 +1,20 @@
 apiVersion: v1
 kind: Secret
+
+metadata:
+  name: flask-secret
+  namespace: flaskapp
+
+type: Opaque
+
+stringData:
+  PRODUCTION_DATABASE_URL: postgresql+psycopg2://testuser:testpass@postgres-service:5432/testdb
+  #PRODUCTION_DATABASE_URL: postgresql+psycopg2://wrongdb@postgres-service:5432/testdb
+
+---
+
+apiVersion: v1
+kind: Secret
 metadata:
   name: postgres-secret
   namespace: flaskapp
