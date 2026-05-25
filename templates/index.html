@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card status-card"><div class="card-body"><h6>Application Status</h6><p class="text-success fw-bold mb-0">Healthy ✅</p></div></div></div>
+  <div class="col-md-3"><div class="card status-card"><div class="card-body"><h6>Database Status</h6><p class="{{ 'text-success' if db_connected else 'text-danger' }} fw-bold mb-0">{{ 'Connected ✅' if db_connected else 'Disconnected ❌' }}</p></div></div></div>
+  <div class="col-md-3"><div class="card status-card"><div class="card-body"><h6>Environment</h6><p class="fw-bold mb-0">Production</p></div></div></div>
+  <div class="col-md-3"><div class="card status-card"><div class="card-body"><h6>Deployment</h6><p class="fw-bold mb-0">Kubernetes</p></div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card"><div class="card-header">Create Account</div><div class="card-body">
+      <form method="post" action="{{ url_for('web.create_account') }}" class="row g-3">
+        <div class="col-md-6"><label class="form-label">Username</label><input name="username" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label">Country</label><input name="country" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">Phone Number</label><input name="phone_number" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">DOB</label><input type="date" name="dob" class="form-control"></div>
+        <div class="col-12"><button class="btn btn-primary">Create Account</button></div>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card"><div class="card-header">Create Item</div><div class="card-body">
+      <form method="post" action="{{ url_for('web.create_item') }}" class="row g-3">
+        <div class="col-md-6"><label class="form-label">Item Name</label><input name="name" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label">Price</label><input type="number" step="0.01" min="0" name="price" class="form-control" required></div>
+        <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+        <div class="col-12"><label class="form-label">Image Link</label><input name="image_link" class="form-control"></div>
+        <div class="col-12"><label class="form-label">Account Owner</label>
+          <select name="account_id" class="form-select" required>
+            <option value="">Select owner</option>
+            {% for account in accounts %}<option value="{{ account.id }}">{{ account.username }} ({{ account.email }})</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-12"><button class="btn btn-success">Create Item</button></div>
+      </form>
+    </div></div>
+  </div>
+</div>
+
+<div class="card mt-4">
+  <div class="card-header">Accounts</div>
+  <div class="table-responsive">
+    <table class="table table-striped align-middle mb-0">
+      <thead><tr><th>Username</th><th>Email</th><th>Country</th><th>Phone Number</th><th>DOB</th><th>Created At</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for account in accounts %}
+        <tr>
+          <td>{{ account.username }}</td><td>{{ account.email }}</td><td>{{ account.country or '-' }}</td><td>{{ account.phone_number or '-' }}</td>
+          <td>{{ account.dob or '-' }}</td><td>{{ account.created.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editAccount{{ account.id|replace('-', '') }}">Edit</button>
+            <form method="post" action="{{ url_for('web.delete_account', account_id=account.id) }}"><button class="btn btn-sm btn-outline-danger">Delete</button></form>
+          </td>
+        </tr>
+      {% else %}<tr><td colspan="7" class="text-center text-muted">No accounts yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mt-4">
+  <div class="card-header">Items</div>
+  <div class="table-responsive">
+    <table class="table table-striped align-middle mb-0">
+      <thead><tr><th>Name</th><th>Price</th><th>Description</th><th>Owner</th><th>Created At</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item.name }}</td><td>${{ '%.2f'|format(item.price) }}</td><td>{{ item.description or '-' }}</td>
+          <td>{{ item.account.username if item.account else '-' }}</td><td>{{ item.created.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td><form method="post" action="{{ url_for('web.delete_item', item_id=item.id) }}"><button class="btn btn-sm btn-outline-danger">Delete</button></form></td>
+        </tr>
+      {% else %}<tr><td colspan="6" class="text-center text-muted">No items yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% for account in accounts %}
+<div class="modal fade" id="editAccount{{ account.id|replace('-', '') }}" tabindex="-1">
+  <div class="modal-dialog"><form method="post" action="{{ url_for('web.edit_account', account_id=account.id) }}" class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Edit {{ account.username }}</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body row g-3">
+      <div class="col-12"><label class="form-label">Username</label><input name="username" value="{{ account.username }}" class="form-control" required></div>
+      <div class="col-12"><label class="form-label">Email</label><input type="email" name="email" value="{{ account.email }}" class="form-control" required></div>
+      <div class="col-6"><label class="form-label">Country</label><input name="country" value="{{ account.country or '' }}" class="form-control"></div>
+      <div class="col-6"><label class="form-label">Phone Number</label><input name="phone_number" value="{{ account.phone_number or '' }}" class="form-control"></div>
+      <div class="col-6"><label class="form-label">DOB</label><input type="date" name="dob" value="{{ account.dob.isoformat() if account.dob else '' }}" class="form-control"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary">Save changes</button></div>
+  </form></div>
+</div>
+{% endfor %}
+{% endblock %}

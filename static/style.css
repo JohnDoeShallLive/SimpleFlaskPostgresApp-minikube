@@ -1,0 +1,5 @@
+body { font-size: 0.95rem; }
+.card { border: 0; box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,.08); }
+.card-header { font-weight: 600; background-color: #fff; }
+.status-card h6 { color: #6c757d; font-size: .85rem; text-transform: uppercase; letter-spacing: .02em; }
+.table td, .table th { white-space: nowrap; }

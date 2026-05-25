@@ -1,31 +1,44 @@
 import os
 
-# App Initialization
-from __init__ import create_app # from __init__ file
-app = create_app(os.getenv("CONFIG_MODE")) 
-
-# ----------------------------------------------- #
-
-# Hello World!
-@app.route('/')
-def hello():
-    return "Hello World!"
-
-# Applications Routes
-from accounts import urls
-from items import urls
-
-@app.route('/health')
-def health():
-    return {
-        "status": "healthy"
-    }, 200
+from flask import Flask
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 
-# ----------------------------------------------- #
+db = SQLAlchemy()
+migrate = Migrate()
+
+
+def create_app() -> Flask:
+    app = Flask(__name__)
+
+    config_mode = os.getenv("CONFIG_MODE", "production").lower()
+    database_url = (
+        os.getenv(f"{config_mode.upper()}_DATABASE_URL")
+        or os.getenv("DATABASE_URL")
+        or os.getenv("PRODUCTION_DATABASE_URL")
+    )
+
+    if not database_url:
+        raise RuntimeError("Database URL is not configured. Set DATABASE_URL or *_DATABASE_URL env vars.")
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-me-in-production")
+    app.config["APP_ENV"] = config_mode
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    from routes import web_bp
+
+    app.register_blueprint(web_bp)
+
+    return app
+
+
+app = create_app()
+
 
 if __name__ == "__main__":
-    # To Run the Server in Terminal => flask run -h localhost -p 5000
-    # To Run the Server with Automatic Restart When Changes Occurred => FLASK_DEBUG=1 flask run -h localhost -p 5000
-
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=os.getenv("FLASK_DEBUG") == "1")
