@@ -2,7 +2,7 @@ from sqlalchemy import inspect
 from datetime import datetime
 from sqlalchemy.orm import validates
 
-from __init__ import db # from __init__.py
+from app import db # from __init__.py
 
 # ----------------------------------------------- #
 

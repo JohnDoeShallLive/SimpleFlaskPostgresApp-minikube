@@ -2,7 +2,7 @@ from sqlalchemy import inspect
 from datetime import datetime
 from sqlalchemy.orm import validates
 
-from __init__ import db  # from __init__.py
+from app import db # from __init__.py
 
 # ----------------------------------------------- #
 
@@ -43,4 +43,4 @@ class Item(db.Model):
         return { c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs }
 
     def __repr__(self):
-        return "<%r>" % self.email
+        return "<%r>" % self.name
